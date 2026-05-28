@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 提供先データ: このツールでの読み書きを許可
+    // （1ドキュメント約1MBの上限はFirestoreが標準で強制）
+    match /influencers/{id} {
+      allow read, write: if true;
+    }
+    // 初期データ投入フラグ
+    match /_meta/{doc} {
+      allow read, write: if true;
+    }
+    // それ以外はすべて拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

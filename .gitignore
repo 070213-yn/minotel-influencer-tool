@@ -1,0 +1,10 @@
+# 依存・テスト用（公開不要）
+node_modules/
+package.json
+package-lock.json
+_*.mjs
+_*.html
+_*.json
+firebase-debug.log
+.firebase/
+.firebaserc

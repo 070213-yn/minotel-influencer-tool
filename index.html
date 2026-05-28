@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6cb0e6" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236cb0e6'/%3E%3Ctext x='50%25' y='54%25' font-size='38' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3Em%3C/text%3E%3C/svg%3E" />
+  <title>minotel 提供先管理ツール</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- パスワード画面 -->
+  <div id="gate" class="gate">
+    <div class="gate-box">
+      <div class="gate-logo">minotel</div>
+      <div class="gate-title">提供先管理ツール</div>
+      <p class="gate-sub">パスワードを入力してください</p>
+      <input id="gate-input" class="gate-input" type="password" inputmode="numeric" autocomplete="off" placeholder="パスワード" />
+      <button id="gate-btn" class="gate-btn">ひらく</button>
+      <p id="gate-err" class="gate-err" hidden>パスワードが違います</p>
+    </div>
+  </div>
+
+  <!-- 準備中（Firebase未設定）画面 -->
+  <div id="setup" class="setup" hidden>
+    <div class="setup-box">
+      <h2>準備中です</h2>
+      <p>Firebaseの設定がまだ入っていません。<br>設定が完了すると自動的に使えるようになります。</p>
+    </div>
+  </div>
+
+  <!-- アプリ本体 -->
+  <div id="app" class="app" hidden>
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-mark">minotel</span>
+          <span class="brand-name">提供先管理ツール</span>
+        </div>
+        <div class="header-actions">
+          <button id="btn-add" class="btn btn-primary">＋ 新規追加</button>
+          <button id="btn-menu" class="btn btn-ghost" title="メニュー">⋯</button>
+        </div>
+      </div>
+      <div id="menu" class="menu" hidden>
+        <button id="btn-export" class="menu-item">バックアップ書き出し（JSON）</button>
+        <button id="btn-import" class="menu-item">バックアップ読み込み（JSON）</button>
+        <input id="import-file" type="file" accept="application/json" hidden />
+        <div class="menu-sep"></div>
+        <button id="btn-logout" class="menu-item">ロック（パスワード画面へ）</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input id="search" class="search" type="text" placeholder="ユーザー名・IDで検索（部分一致）" />
+        <button id="search-clear" class="search-clear" hidden>×</button>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group" id="status-filters">
+          <span class="filter-label">状況:</span>
+          <button class="chip chip-status" data-status="提供確定">提供確定</button>
+          <button class="chip chip-status" data-status="検討中">検討中</button>
+          <button class="chip chip-status" data-status="提供しない">提供しない</button>
+        </div>
+        <div class="filter-group" id="color-filters">
+          <span class="filter-label">希望色:</span>
+          <button class="chip chip-color" data-color="ピュアホワイト">ピュアホワイト</button>
+          <button class="chip chip-color" data-color="パステルブルー">パステルブルー</button>
+        </div>
+      </div>
+
+      <div class="filters filters-2">
+        <label class="sort-wrap">
+          <span class="filter-label">並べ替え:</span>
+          <select id="sort">
+            <option value="followers_desc">フォロワー数 多い順</option>
+            <option value="followers_asc">フォロワー数 少ない順</option>
+            <option value="ratio_asc">フォロー率 低い順（影響力高め）</option>
+            <option value="ratio_desc">フォロー率 高い順</option>
+            <option value="name_asc">名前 順</option>
+            <option value="created_desc">追加が新しい順</option>
+          </select>
+        </label>
+        <label class="ratio-filter">
+          <span class="filter-label">フォロー率上限:</span>
+          <input id="ratio-max" type="number" min="0" step="1" placeholder="%（任意）" />
+          <span class="ratio-unit">%以下</span>
+        </label>
+      </div>
+
+      <div class="summary">
+        <span id="count-text">0件</span>
+        <span class="legend" title="フォロー数 ÷ フォロワー数。低いほど『フォローは少ないのにフォロワーが多い』＝影響力が高い目安。相互フォロー狙いのアカウントは高くなりがち。">フォロー率とは？</span>
+      </div>
+    </div>
+
+    <main id="list" class="list"></main>
+    <div id="empty" class="empty" hidden>該当する提供先がありません</div>
+  </div>
+
+  <!-- 追加・編集モーダル -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modal-title">新規追加</h3>
+        <button class="modal-close" data-close>×</button>
+      </div>
+      <div class="modal-body">
+        <label class="field">
+          <span class="field-label">Xリンク（貼るとID・ユーザー名を自動入力）</span>
+          <input id="f-xlink" type="url" placeholder="https://x.com/xxxx" />
+          <span class="hint">※フォロワー数の自動取得はXの制限により不可。手入力してください。</span>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">ユーザー名</span>
+            <input id="f-name" type="text" placeholder="表示名" />
+          </label>
+          <label class="field">
+            <span class="field-label">X ID（@なし）</span>
+            <input id="f-xid" type="text" placeholder="xxxx" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">フォロワー数</span>
+            <input id="f-followers" type="number" min="0" inputmode="numeric" placeholder="例: 2000" />
+          </label>
+          <label class="field">
+            <span class="field-label">フォロー数</span>
+            <input id="f-following" type="number" min="0" inputmode="numeric" placeholder="例: 300" />
+          </label>
+        </div>
+
+        <div id="ratio-preview" class="ratio-preview" hidden></div>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">状況</span>
+            <select id="f-status">
+              <option value="検討中">検討中</option>
+              <option value="提供確定">提供確定</option>
+              <option value="提供しない">提供しない</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">希望カラー</span>
+            <select id="f-color">
+              <option value="">未選択</option>
+              <option value="ピュアホワイト">ピュアホワイト</option>
+              <option value="パステルブルー">パステルブルー</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="field-label">写真（デスク等・複数枚OK）</span>
+          <div id="photo-grid" class="photo-grid"></div>
+          <label class="photo-add">
+            <input id="f-photos" type="file" accept="image/*" multiple hidden />
+            <span>＋ 写真を追加</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="field-label">他のSNS</span>
+          <div id="sns-list" class="sub-list"></div>
+          <button id="add-sns" type="button" class="sub-add">＋ SNSを追加</button>
+        </div>
+
+        <div class="field">
+          <span class="field-label">PR投稿URL</span>
+          <div id="pr-list" class="sub-list"></div>
+          <button id="add-pr" type="button" class="sub-add">＋ 投稿URLを追加</button>
+        </div>
+
+        <label class="field">
+          <span class="field-label">メモ</span>
+          <textarea id="f-note" rows="2" placeholder="自由メモ"></textarea>
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button id="modal-delete" class="btn btn-danger" hidden>削除</button>
+        <div class="modal-foot-right">
+          <button class="btn btn-ghost" data-close>キャンセル</button>
+          <button id="modal-save" class="btn btn-primary">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 写真拡大 -->
+  <div id="lightbox" class="lightbox" hidden>
+    <img id="lightbox-img" src="" alt="" />
+    <button class="lightbox-close" data-close>×</button>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
