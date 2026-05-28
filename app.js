@@ -199,10 +199,6 @@ function render() {
     card.className = "card";
     card.addEventListener("click", () => openModal(it.id));
 
-    const thumb = it.photos && it.photos.length
-      ? `<img class="card-thumb" src="${esc(it.photos[0])}" alt="">`
-      : `<div class="card-thumb placeholder">📷</div>`;
-
     const xUrl = safeUrl(it.xLink) || (it.xId ? `https://x.com/${esc(it.xId)}` : "");
     const idLine = it.xId
       ? `<a class="card-id" href="${esc(xUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">@${esc(it.xId)}</a>`
@@ -211,6 +207,11 @@ function render() {
     const badges = [];
     if (it.status) badges.push(`<span class="badge badge-status-${esc(it.status)}">${esc(it.status)}</span>`);
     if (it.color) badges.push(`<span class="badge badge-color-${esc(it.color)}">${esc(it.color)}</span>`);
+
+    const photos = (it.photos || []);
+    const photosHtml = photos.length
+      ? `<div class="card-photos">${photos.map((src, i) => `<img class="card-photo" data-i="${i}" src="${esc(src)}" alt="">`).join("")}</div>`
+      : `<div class="card-nophoto">📷 写真なし（カードを開いて追加）</div>`;
 
     const extra = [];
     (it.otherSns || []).forEach((s) => {
@@ -223,21 +224,26 @@ function render() {
     });
 
     card.innerHTML = `
-      <div class="card-top">
-        ${thumb}
-        <div class="card-head">
-          <div class="card-name">${esc(it.name || "（名前なし）")}</div>
-          ${idLine}
-          <div class="badges">${badges.join("")}</div>
-        </div>
+      <div class="card-head">
+        <div class="card-name">${esc(it.name || "（名前なし）")}</div>
+        ${idLine}
+        <div class="badges">${badges.join("")}</div>
       </div>
       <div class="stats">
         <span class="stat">フォロワー<b>${fmtNum(it.followers)}</b></span>
         <span class="stat">フォロー<b>${fmtNum(it.following)}</b></span>
         <span class="ratio-badge ${ratioClass(r)}">${ratioText(r)}</span>
       </div>
+      ${photosHtml}
       ${extra.length ? `<div class="card-extra">${extra.join("")}</div>` : ""}
     `;
+    // 写真クリックで拡大（カードの編集は開かない）
+    card.querySelectorAll(".card-photo").forEach((img) => {
+      img.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openLightbox(img.src);
+      });
+    });
     list.appendChild(card);
   }
 }
@@ -508,6 +514,10 @@ function bindUI() {
       else closeModal();
     })
   );
+  // 拡大表示は背景クリックでも閉じる
+  $("lightbox").addEventListener("click", (e) => {
+    if (e.target.id === "lightbox") $("lightbox").hidden = true;
+  });
   $("modal-save").addEventListener("click", saveItem);
   $("modal-delete").addEventListener("click", deleteItem);
   $("f-xlink").addEventListener("input", () => {

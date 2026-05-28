@@ -63,7 +63,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 }
 .header-inner {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; max-width: 1100px; margin: 0 auto;
+  padding: 12px 24px; max-width: 1600px; margin: 0 auto;
 }
 .brand { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-mark { font-weight: 800; color: var(--blue); letter-spacing: 1px; font-size: 18px; }
@@ -90,7 +90,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .menu-sep { height: 1px; background: var(--line); margin: 4px 0; }
 
 /* ===== ツールバー ===== */
-.toolbar { max-width: 1100px; margin: 0 auto; padding: 14px 16px 4px; }
+.toolbar { max-width: 1600px; margin: 0 auto; padding: 14px 24px 4px; }
 .search-wrap { position: relative; }
 .search {
   width: 100%; padding: 12px 40px 12px 14px; border: 1px solid var(--line);
@@ -130,35 +130,42 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 
 /* ===== カード一覧 ===== */
 .list {
-  max-width: 1100px; margin: 0 auto; padding: 8px 16px 60px;
-  display: grid; grid-template-columns: 1fr; gap: 12px;
+  max-width: 1600px; margin: 0 auto; padding: 8px 24px 60px;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
 }
-@media (min-width: 640px) { .list { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 980px) { .list { grid-template-columns: 1fr 1fr 1fr; } }
 
 .card {
   background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: 14px; border: 1px solid var(--line); position: relative; cursor: pointer;
+  padding: 18px; border: 1px solid var(--line); position: relative; cursor: pointer;
   transition: box-shadow .15s, transform .1s;
 }
 .card:active { transform: scale(0.995); }
 .card:hover { box-shadow: var(--shadow-lg); }
-.card-top { display: flex; gap: 10px; }
-.card-thumb {
-  width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex-shrink: 0;
-  background: var(--blue-bg); border: 1px solid var(--line);
-}
-.card-thumb.placeholder {
-  display: flex; align-items: center; justify-content: center; color: var(--blue-soft); font-size: 22px;
-}
-.card-head { flex: 1; min-width: 0; }
+.card-head { min-width: 0; }
 .card-name {
-  font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 700; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.card-id { font-size: 13px; color: var(--blue); text-decoration: none; }
+.card-id { font-size: 14px; color: var(--blue); text-decoration: none; }
 .card-id:hover { text-decoration: underline; }
 
-.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+/* カード上の写真表示（タップで拡大） */
+.card-photos {
+  display: flex; gap: 8px; margin-top: 12px; overflow-x: auto;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+}
+.card-photo {
+  height: 150px; width: auto; max-width: 100%; flex-shrink: 0;
+  border-radius: 12px; object-fit: cover; border: 1px solid var(--line);
+  cursor: zoom-in; background: var(--blue-bg);
+}
+.card-nophoto {
+  margin-top: 12px; height: 80px; border: 1px dashed var(--line); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--blue-soft); font-size: 13px; gap: 6px;
+}
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
 .badge-status-提供確定 { background: #e3f6ec; color: var(--green); }
 .badge-status-検討中 { background: #fdf3d8; color: var(--amber); }
