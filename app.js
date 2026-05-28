@@ -22,6 +22,7 @@ const state = {
   sort: "followers_desc",
   editingId: null,   // 編集中のドキュメントID（新規はnull）
   draftPhotos: [],   // モーダル内の写真（base64）
+  lightbox: { photos: [], index: 0 }, // 拡大表示の状態
 };
 
 let db = null;
@@ -246,7 +247,7 @@ function render() {
     card.querySelectorAll(".card-photo").forEach((img) => {
       img.addEventListener("click", (e) => {
         e.stopPropagation();
-        openLightbox(img.src);
+        openLightbox(photos, Number(img.dataset.i) || 0);
       });
     });
     list.appendChild(card);
@@ -292,7 +293,7 @@ function renderDraftPhotos() {
     const div = document.createElement("div");
     div.className = "photo-item";
     div.innerHTML = `<img src="${esc(src)}" alt=""><button type="button" class="photo-del">×</button>`;
-    div.querySelector("img").addEventListener("click", () => openLightbox(src));
+    div.querySelector("img").addEventListener("click", () => openLightbox(state.draftPhotos, i));
     div.querySelector(".photo-del").addEventListener("click", () => {
       state.draftPhotos.splice(i, 1);
       renderDraftPhotos();
@@ -419,11 +420,28 @@ async function deleteItem() {
   }
 }
 
-// ====== ライトボックス ======
-function openLightbox(src) {
-  $("lightbox-img").src = src;
+// ====== ライトボックス（写真拡大・前後めくり） ======
+function openLightbox(photos, index = 0) {
+  state.lightbox = { photos: (photos || []).slice(), index };
+  renderLightbox();
   $("lightbox").hidden = false;
 }
+function renderLightbox() {
+  const { photos, index } = state.lightbox;
+  if (!photos.length) { $("lightbox").hidden = true; return; }
+  $("lightbox-img").src = photos[index];
+  const multi = photos.length > 1;
+  $("lightbox-prev").hidden = !multi;
+  $("lightbox-next").hidden = !multi;
+  $("lightbox-counter").textContent = multi ? `${index + 1} / ${photos.length}` : "";
+}
+function lightboxStep(delta) {
+  const { photos, index } = state.lightbox;
+  if (photos.length < 2) return;
+  state.lightbox.index = (index + delta + photos.length) % photos.length;
+  renderLightbox();
+}
+function closeLightbox() { $("lightbox").hidden = true; }
 
 // ====== バックアップ書き出し／読み込み ======
 function exportJson() {
@@ -519,9 +537,18 @@ function bindUI() {
       else closeModal();
     })
   );
-  // 拡大表示は背景クリックでも閉じる
+  // 拡大表示: 背景クリックで閉じる / 前後ボタン
   $("lightbox").addEventListener("click", (e) => {
-    if (e.target.id === "lightbox") $("lightbox").hidden = true;
+    if (e.target.id === "lightbox") closeLightbox();
+  });
+  $("lightbox-prev").addEventListener("click", (e) => { e.stopPropagation(); lightboxStep(-1); });
+  $("lightbox-next").addEventListener("click", (e) => { e.stopPropagation(); lightboxStep(1); });
+  // キーボード: ←→で移動・Escで閉じる
+  document.addEventListener("keydown", (e) => {
+    if ($("lightbox").hidden) return;
+    if (e.key === "ArrowLeft") lightboxStep(-1);
+    else if (e.key === "ArrowRight") lightboxStep(1);
+    else if (e.key === "Escape") closeLightbox();
   });
   $("modal-save").addEventListener("click", saveItem);
   $("modal-delete").addEventListener("click", deleteItem);

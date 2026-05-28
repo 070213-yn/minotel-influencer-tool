@@ -198,8 +198,11 @@
 
   <!-- 写真拡大 -->
   <div id="lightbox" class="lightbox" hidden>
+    <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="前の写真">‹</button>
     <img id="lightbox-img" src="" alt="" />
-    <button class="lightbox-close" data-close>×</button>
+    <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="次の写真">›</button>
+    <div id="lightbox-counter" class="lightbox-counter"></div>
+    <button class="lightbox-close" data-close aria-label="閉じる">×</button>
   </div>
 
   <div id="toast" class="toast" hidden></div>
