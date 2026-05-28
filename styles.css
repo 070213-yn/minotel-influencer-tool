@@ -172,6 +172,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .badge-status-提供しない { background: #eef1f4; color: var(--muted); }
 .badge-color-ピュアホワイト { background: #f4f7fa; color: #5a6b7a; border: 1px solid var(--line); }
 .badge-color-パステルブルー { background: var(--blue-bg); color: var(--blue); }
+.badge-color-どちらでもOK { background: #eef6ec; color: #4f8a5b; }
 
 .stats { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
 .stat { font-size: 12px; color: var(--muted); }
@@ -183,6 +184,14 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .ratio-mid { background: #fdf3d8; color: var(--amber); }
 .ratio-high { background: #fdeaea; color: var(--red); }
 .ratio-na { background: #eef1f4; color: var(--muted); }
+
+/* メモ表示（カード上） */
+.card-note {
+  margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+  background: #fbf7ea; border: 1px solid #efe6c9; color: #6b5f3e;
+  font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+}
+.card-note::before { content: "📝 "; }
 
 .card-extra { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
 .tag-link {

@@ -213,6 +213,10 @@ function render() {
       ? `<div class="card-photos">${photos.map((src, i) => `<img class="card-photo" data-i="${i}" src="${esc(src)}" alt="">`).join("")}</div>`
       : `<div class="card-nophoto">📷 写真なし（カードを開いて追加）</div>`;
 
+    const noteHtml = (it.note && it.note.trim())
+      ? `<div class="card-note">${esc(it.note)}</div>`
+      : "";
+
     const extra = [];
     (it.otherSns || []).forEach((s) => {
       const u = safeUrl(s.url);
@@ -235,6 +239,7 @@ function render() {
         <span class="ratio-badge ${ratioClass(r)}">${ratioText(r)}</span>
       </div>
       ${photosHtml}
+      ${noteHtml}
       ${extra.length ? `<div class="card-extra">${extra.join("")}</div>` : ""}
     `;
     // 写真クリックで拡大（カードの編集は開かない）
