@@ -53,7 +53,7 @@
 
     <div class="toolbar">
       <div class="search-wrap">
-        <input id="search" class="search" type="text" placeholder="ユーザー名・IDで検索（部分一致）" />
+        <input id="search" class="search" type="text" placeholder="ユーザー名・IDで検索（部分一致）" autocomplete="off" autocapitalize="off" spellcheck="false" />
         <button id="search-clear" class="search-clear" hidden>×</button>
       </div>
 
@@ -86,7 +86,7 @@
         </label>
         <label class="ratio-filter">
           <span class="filter-label">フォロー率上限:</span>
-          <input id="ratio-max" type="number" min="0" step="1" placeholder="%（任意）" />
+          <input id="ratio-max" type="number" min="0" step="1" placeholder="%（任意）" autocomplete="off" />
           <span class="ratio-unit">%以下</span>
         </label>
       </div>

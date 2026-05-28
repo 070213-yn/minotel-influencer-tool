@@ -492,6 +492,15 @@ function bindUI() {
     location.reload();
   });
 
+  // リロード時にブラウザが前回入力を復元するのを防ぐ（検索・フォロー率を空に）
+  const resetInputs = () => {
+    $("search").value = ""; state.search = ""; $("search-clear").hidden = true;
+    $("ratio-max").value = ""; state.ratioMax = null;
+  };
+  resetInputs();
+  // ブラウザの戻る/進む(bfcache)復元時にもリセット
+  window.addEventListener("pageshow", (e) => { if (e.persisted) { resetInputs(); render(); } });
+
   // 検索
   const search = $("search");
   search.addEventListener("input", () => {
