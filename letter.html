@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>送付状 - minotel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236cb0e6'/%3E%3Ctext x='50%25' y='54%25' font-size='38' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3Em%3C/text%3E%3C/svg%3E" />
+<style>
+  /* 画面表示 */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #eef2f6; color: #1f2d3d;
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  }
+  .controls {
+    background: #fff; padding: 14px 20px; border-bottom: 1px solid #e2e8f0;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .controls label { font-size: 13px; font-weight: 700; color: #4a5a6a; display: flex; align-items: center; gap: 8px; }
+  .controls input {
+    padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+    font-size: 16px; min-width: 220px; font-family: inherit;
+  }
+  .controls input:focus { outline: none; border-color: #6cb0e6; }
+  .controls button {
+    padding: 10px 18px; background: #6cb0e6; color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .controls button:active { transform: scale(0.97); }
+  .hint { font-size: 12px; color: #7a8a9a; }
+
+  /* 手紙本体 */
+  .letter {
+    max-width: 720px; margin: 30px auto; padding: 70px 80px;
+    background: #fff; box-shadow: 0 4px 20px rgba(40,90,140,0.08);
+    font-family: "Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif;
+    font-size: 16px; line-height: 2; color: #1f2d3d;
+    min-height: 1000px;
+  }
+  .date { text-align: right; margin-bottom: 36px; font-size: 15px; color: #4a5a6a; }
+  .recipient { font-size: 22px; margin-bottom: 44px; letter-spacing: 0.05em; }
+  .body p { margin: 0 0 1.4em; text-align: justify; }
+  .signature {
+    text-align: right; margin-top: 56px; font-size: 16px;
+    line-height: 1.8;
+  }
+  .signature .company { font-size: 18px; letter-spacing: 0.08em; }
+
+  /* 印刷時 */
+  @page { size: A4 portrait; margin: 25mm; }
+  @media print {
+    body { background: #fff; }
+    .controls { display: none !important; }
+    .letter {
+      max-width: none; margin: 0; padding: 0;
+      box-shadow: none; min-height: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <label>
+    宛名：
+    <input id="name" type="text" placeholder="お名前（例：琴音リナ）" autocomplete="off" />
+    <span style="font-weight:700;color:#4a5a6a;">様</span>
+  </label>
+  <button onclick="window.print()">🖨️ 印刷する</button>
+  <span class="hint">※「〇〇 様」の部分が入力名に置き換わります。日付は本日が自動で入ります。</span>
+</div>
+
+<div class="letter">
+  <div class="date" id="date"></div>
+
+  <div class="recipient"><span data-name>〇〇</span> 様</div>
+
+  <div class="body">
+    <p>このたびは、minotel cloud speaker のご提供にご快諾いただき、誠にありがとうございます。</p>
+
+    <p>同梱のスピーカーは、デスク周りに自然に馴染むよう、ピュアホワイトとパステルブルーの2色をご用意した、コンパクトなUSB接続スピーカーです。日々の配信やお仕事のお供として、長くご愛用いただけましたら幸いです。</p>
+
+    <p>ご使用にあたってご不明な点やお気づきの点がございましたら、いつでもお気軽にDMよりお問い合わせください。別途お送りしておりますプロモーションコードも、ご視聴者の皆さまへぜひご紹介いただけますと幸いです。</p>
+
+    <p>末筆ながら、<span data-name>〇〇</span> 様のますますのご活躍を、心よりお祈り申し上げます。</p>
+  </div>
+
+  <div class="signature">
+    <div class="company">株式会社 minotel</div>
+  </div>
+</div>
+
+<script>
+  // 日付（本日）を自動セット
+  const d = new Date();
+  document.getElementById("date").textContent =
+    `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+
+  // 宛名の入力を本文の「〇〇」に反映
+  const nameEl = document.getElementById("name");
+  const targets = document.querySelectorAll("[data-name]");
+  const sync = () => {
+    const v = nameEl.value.trim();
+    targets.forEach((el) => (el.textContent = v || "〇〇"));
+    document.title = (v ? v + "様 - " : "") + "送付状 - minotel";
+  };
+  nameEl.addEventListener("input", sync);
+  // リロード時の復元防止
+  nameEl.value = "";
+  nameEl.focus();
+</script>
+
+</body>
+</html>
