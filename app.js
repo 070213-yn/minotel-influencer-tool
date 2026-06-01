@@ -48,6 +48,59 @@ function parseXId(link) {
   const m = String(link || "").match(/(?:x|twitter)\.com\/@?([A-Za-z0-9_]+)/i);
   return m ? m[1] : "";
 }
+
+// URLからSNS名を自動判別（不明な場合はホスト名から推測）
+const SNS_RULES = [
+  [/youtube\.com|youtu\.be/i, "YouTube"],
+  [/(?:^|\W)x\.com|twitter\.com/i, "X"],
+  [/instagram\.com/i, "Instagram"],
+  [/tiktok\.com/i, "TikTok"],
+  [/twitch\.tv/i, "Twitch"],
+  [/bilibili\.com/i, "Bilibili"],
+  [/(?:niconico|nicovideo)\.jp/i, "ニコニコ"],
+  [/bsky\.app/i, "Bluesky"],
+  [/threads\.(?:net|com)/i, "Threads"],
+  [/facebook\.com|fb\.com/i, "Facebook"],
+  [/discord\.(?:com|gg)/i, "Discord"],
+  [/linkedin\.com/i, "LinkedIn"],
+  [/note\.com/i, "note"],
+  [/pixiv\.net/i, "pixiv"],
+  [/booth\.pm/i, "BOOTH"],
+  [/skeb\.jp/i, "Skeb"],
+  [/twitcasting\.tv/i, "ツイキャス"],
+  [/showroom-live\.com/i, "SHOWROOM"],
+  [/mildom\.com/i, "Mildom"],
+  [/mirrativ\.com/i, "Mirrativ"],
+  [/reality\.app/i, "REALITY"],
+  [/spoon\.cr/i, "Spoon"],
+  [/17\.live/i, "17LIVE"],
+  [/vrchat\.com/i, "VRChat"],
+  [/soundcloud\.com/i, "SoundCloud"],
+  [/spotify\.com/i, "Spotify"],
+  [/patreon\.com/i, "Patreon"],
+  [/fanbox\.cc/i, "FANBOX"],
+  [/ci-en\.(?:jp|net)/i, "Ci-en"],
+  [/linktr\.ee/i, "Linktree"],
+  [/lit\.link/i, "lit.link"],
+  [/github\.com/i, "GitHub"],
+  [/zenn\.dev/i, "Zenn"],
+  [/qiita\.com/i, "Qiita"],
+  [/tumblr\.com/i, "Tumblr"],
+  [/reddit\.com/i, "Reddit"],
+];
+function detectSnsName(url) {
+  const s = String(url || "");
+  for (const [re, name] of SNS_RULES) if (re.test(s)) return name;
+  // フォールバック: ホストの第二レベルドメインから推測
+  try {
+    const host = new URL(s).hostname.replace(/^www\./, "");
+    const base = host.split(".").slice(-2)[0];
+    if (base && !/^(com|co|net|org|jp|tv|app|live|cr|gg|pm)$/.test(base) && base.length >= 2) {
+      return base.charAt(0).toUpperCase() + base.slice(1);
+    }
+  } catch (_) {}
+  return "";
+}
 function fmtNum(n) {
   return (n === null || n === undefined || n === "") ? "—" : Number(n).toLocaleString("ja-JP");
 }
@@ -381,6 +434,17 @@ function addSubRow(wrap, labelPh, label = "", url = "") {
     <input type="text" class="sub-label" placeholder="${labelPh}" value="${esc(label)}" style="flex:0 0 38%">
     <input type="url" class="sub-url" placeholder="https://..." value="${esc(url)}">
     <button type="button" class="sub-del">×</button>`;
+  const labelInput = div.querySelector(".sub-label");
+  const urlInput = div.querySelector(".sub-url");
+  // 手入力されたラベルは尊重（自動更新しない）
+  labelInput.addEventListener("input", () => { labelInput.dataset.auto = ""; });
+  // URL変更で SNS名を自動検出してラベルを埋める（空 or 自動入力済みの時のみ）
+  const tryAuto = () => {
+    if (labelInput.value && labelInput.dataset.auto !== "1") return;
+    const detected = detectSnsName(urlInput.value);
+    if (detected) { labelInput.value = detected; labelInput.dataset.auto = "1"; }
+  };
+  urlInput.addEventListener("input", tryAuto);
   div.querySelector(".sub-del").addEventListener("click", () => div.remove());
   wrap.appendChild(div);
 }
