@@ -27,6 +27,14 @@ const state = {
 
 let db = null;
 
+// ====== 進捗タグ定義（カード上でON/OFF・複数同時可） ======
+const PROGRESS_TAGS = [
+  { key: "発送済",         label: "発送",       icon: "📦", color: "#5aa6d8" },
+  { key: "プロモ画像作成済", label: "プロモ画像", icon: "🖼️", color: "#a570d8" },
+  { key: "プロモ詳細送信済", label: "プロモ詳細", icon: "📨", color: "#d88a3c" },
+  { key: "PR完了",         label: "PR",         icon: "📢", color: "#3aab66" },
+];
+
 // ====== ユーティリティ ======
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => (
@@ -218,6 +226,15 @@ function render() {
       ? `<div class="card-note">${esc(it.note)}</div>`
       : "";
 
+    const progSet = new Set(it.progress || []);
+    const progressHtml = `<div class="progress-chips">${
+      PROGRESS_TAGS.map(t => {
+        const on = progSet.has(t.key);
+        const style = on ? `background:${t.color};border-color:${t.color}` : "";
+        return `<button type="button" class="progress-chip${on ? " on" : ""}" data-tag="${esc(t.key)}" style="${style}" title="${esc(t.key)}">${t.icon} ${esc(t.label)}</button>`;
+      }).join("")
+    }</div>`;
+
     const extra = [];
     (it.otherSns || []).forEach((s) => {
       const u = safeUrl(s.url);
@@ -239,6 +256,7 @@ function render() {
         <span class="stat">フォロー<b>${fmtNum(it.following)}</b></span>
         <span class="ratio-badge ${ratioClass(r)}">${ratioText(r)}</span>
       </div>
+      ${progressHtml}
       ${photosHtml}
       ${noteHtml}
       ${extra.length ? `<div class="card-extra">${extra.join("")}</div>` : ""}
@@ -250,7 +268,32 @@ function render() {
         openLightbox(photos, Number(img.dataset.i) || 0);
       });
     });
+    // 進捗チップでON/OFF切替（カード詳細は開かない）
+    card.querySelectorAll(".progress-chip").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleProgress(it.id, btn.dataset.tag);
+      });
+    });
     list.appendChild(card);
+  }
+}
+
+// ====== 進捗タグの切替（カードから直接） ======
+async function toggleProgress(id, tag) {
+  if (!db) return;
+  const it = state.items.find((x) => x.id === id);
+  if (!it) return;
+  const cur = new Set(it.progress || []);
+  cur.has(tag) ? cur.delete(tag) : cur.add(tag);
+  const arr = [...cur];
+  it.progress = arr; // 即時反映（楽観更新）
+  render();
+  try {
+    await setDoc(doc(db, "influencers", id), { progress: arr }, { merge: true });
+  } catch (e) {
+    console.error(e);
+    toast("更新エラー: " + (e.message || e));
   }
 }
 
@@ -272,6 +315,7 @@ function openModal(id) {
 
   state.draftPhotos = (it?.photos || []).slice();
   renderDraftPhotos();
+  renderModalProgress(it?.progress || []);
   renderSubList("sns", it?.otherSns || []);
   renderSubList("pr", it?.prPosts || []);
   updateRatioPreview();
@@ -284,6 +328,28 @@ function closeModal() {
   document.body.style.overflow = "";
   state.editingId = null;
   state.draftPhotos = [];
+}
+
+function renderModalProgress(progress) {
+  const cur = new Set(progress || []);
+  $("f-progress").innerHTML = PROGRESS_TAGS.map(t => `
+    <label class="progress-check${cur.has(t.key) ? " on" : ""}" style="${cur.has(t.key) ? `background:${t.color};border-color:${t.color};color:#fff` : ""}">
+      <input type="checkbox" value="${esc(t.key)}" ${cur.has(t.key) ? "checked" : ""}>
+      <span>${t.icon} ${esc(t.label)}</span>
+    </label>
+  `).join("");
+  // チェック変更で見た目を更新
+  $("f-progress").querySelectorAll("input").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const lbl = cb.closest(".progress-check");
+      const t = PROGRESS_TAGS.find(x => x.key === cb.value);
+      if (cb.checked) { lbl.classList.add("on"); lbl.style.cssText = `background:${t.color};border-color:${t.color};color:#fff`; }
+      else { lbl.classList.remove("on"); lbl.style.cssText = ""; }
+    });
+  });
+}
+function collectModalProgress() {
+  return [...$("f-progress").querySelectorAll("input:checked")].map(i => i.value);
 }
 
 function renderDraftPhotos() {
@@ -381,6 +447,7 @@ async function saveItem() {
     otherSns: collectSubList("sns"),
     prPosts: collectSubList("pr"),
     photos: state.draftPhotos,
+    progress: collectModalProgress(),
   };
   if (!data.name && !data.xId) { toast("ユーザー名かX IDを入力してください"); return; }
 

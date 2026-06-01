@@ -185,6 +185,28 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .ratio-high { background: #fdeaea; color: var(--red); }
 .ratio-na { background: #eef1f4; color: var(--muted); }
 
+/* 進捗チップ（カード上で直接ON/OFF・複数同時可） */
+.progress-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.progress-chip {
+  font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: #f4f7fa; color: var(--muted);
+  cursor: pointer; user-select: none; line-height: 1.2;
+  transition: transform .08s ease;
+}
+.progress-chip:active { transform: scale(0.94); }
+.progress-chip.on { color: #fff; }
+.progress-chip.on::before { content: "✓ "; }
+
+/* モーダル内の進捗チェック（同じ4タグ、編集モーダルでも変更可） */
+.modal-progress { display: flex; flex-wrap: wrap; gap: 8px; }
+.progress-check {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  font-size: 13px; font-weight: 700; color: var(--muted); user-select: none;
+  background: #f4f7fa;
+}
+.progress-check input { margin: 0; }
+
 /* メモ表示（カード上） */
 .card-note {
   margin-top: 10px; padding: 10px 12px; border-radius: 10px;
