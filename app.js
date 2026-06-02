@@ -367,7 +367,7 @@ function buildPromoMessage(code, qty, discount) {
   ];
   if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
   if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
-  lines.push("", "よろしくお願いいたします！");
+  lines.push("", "画像も用意させていただきましたので、ぜひご活用ください！🙏", "", "よろしくお願いいたします！");
   return lines.join("\n");
 }
 async function copyPromoMessage(item) {
