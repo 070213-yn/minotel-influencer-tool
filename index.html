@@ -166,6 +166,22 @@
         </div>
 
         <div class="field">
+          <span class="field-label">Amazonプロモーションコード（任意）</span>
+          <input id="f-promo-code" type="text" placeholder="例: ABCD-1234" autocomplete="off" />
+          <div class="field-row" style="margin-top:8px">
+            <label class="field" style="margin-bottom:0">
+              <span class="field-label">数量限定</span>
+              <input id="f-promo-qty" type="number" min="0" inputmode="numeric" placeholder="例: 100" autocomplete="off" />
+            </label>
+            <label class="field" style="margin-bottom:0">
+              <span class="field-label">割引率(%)</span>
+              <input id="f-promo-discount" type="number" min="0" max="100" inputmode="numeric" placeholder="例: 20" autocomplete="off" />
+            </label>
+          </div>
+          <span class="hint">設定するとカードに表示され、「DM文面をコピー」ボタンが出ます。</span>
+        </div>
+
+        <div class="field">
           <span class="field-label">写真（デスク等・複数枚OK）</span>
           <div id="photo-grid" class="photo-grid"></div>
           <label class="photo-add">

@@ -207,6 +207,29 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 }
 .progress-check input { margin: 0; }
 
+/* Amazonプロモコード表示（カード上で見える＋DM文面コピーボタン） */
+.card-promo {
+  margin-top: 12px; padding: 12px 14px; border-radius: 12px;
+  background: #fff7e6; border: 1px solid #ffd591;
+}
+.promo-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.promo-label { font-size: 11px; font-weight: 700; color: #b07a2a; letter-spacing: 0.04em; }
+.promo-code {
+  font-family: ui-monospace, "SF Mono", Consolas, "Yu Gothic", monospace;
+  font-size: 15px; font-weight: 800; color: #1f2d3d;
+  background: #fff; padding: 4px 10px; border-radius: 8px; border: 1px solid #f0d9a8;
+  letter-spacing: 0.05em; user-select: all;
+}
+.promo-sub { font-size: 12px; color: #8a6f3a; margin-top: 6px; }
+.promo-sub b { color: #5a4520; font-weight: 800; }
+.promo-copy {
+  margin-top: 10px; width: 100%; padding: 9px 12px; border: none; border-radius: 8px;
+  background: #f7a23b; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+  transition: transform .08s;
+}
+.promo-copy:hover { background: #e8932c; }
+.promo-copy:active { transform: scale(0.985); }
+
 /* メモ表示（カード上） */
 .card-note {
   margin-top: 10px; padding: 10px 12px; border-radius: 10px;

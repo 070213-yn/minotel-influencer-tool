@@ -288,6 +288,23 @@ function render() {
       }).join("")
     }</div>`;
 
+    const promoCode = (it.promoCode || "").trim();
+    let promoHtml = "";
+    if (promoCode) {
+      const qty = it.promoQty, disc = it.promoDiscount;
+      const qtyStr = (qty != null && qty !== "") ? `${qty}個` : "—";
+      const discStr = (disc != null && disc !== "") ? `${disc}%` : "—";
+      promoHtml = `
+        <div class="card-promo">
+          <div class="promo-head">
+            <span class="promo-label">🎟️ Amazonプロモコード</span>
+            <span class="promo-code">${esc(promoCode)}</span>
+          </div>
+          <div class="promo-sub">数量 <b>${esc(qtyStr)}</b> ／ 割引 <b>${esc(discStr)}</b></div>
+          <button type="button" class="promo-copy">📋 DM文面をコピー</button>
+        </div>`;
+    }
+
     const extra = [];
     (it.otherSns || []).forEach((s) => {
       const u = safeUrl(s.url);
@@ -310,6 +327,7 @@ function render() {
         <span class="ratio-badge ${ratioClass(r)}">${ratioText(r)}</span>
       </div>
       ${progressHtml}
+      ${promoHtml}
       ${photosHtml}
       ${noteHtml}
       ${extra.length ? `<div class="card-extra">${extra.join("")}</div>` : ""}
@@ -328,7 +346,43 @@ function render() {
         toggleProgress(it.id, btn.dataset.tag);
       });
     });
+    // プロモコード DM文面コピー
+    card.querySelectorAll(".promo-copy").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyPromoMessage(it);
+      });
+    });
     list.appendChild(card);
+  }
+}
+
+// ====== プロモコードDM文面（コピー用） ======
+function buildPromoMessage(code, qty, discount) {
+  const lines = [
+    "お世話になっております！",
+    "プロモーションコードの詳細についてお送りします！",
+    "",
+    "プロモーションコード：" + (code || ""),
+  ];
+  if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
+  if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
+  lines.push("", "よろしくお願いいたします！");
+  return lines.join("\n");
+}
+async function copyPromoMessage(item) {
+  const msg = buildPromoMessage(item.promoCode, item.promoQty, item.promoDiscount);
+  try {
+    await navigator.clipboard.writeText(msg);
+    toast("DM文面をコピーしました");
+  } catch (e) {
+    // フォールバック: テキストエリア経由
+    const ta = document.createElement("textarea");
+    ta.value = msg; ta.style.position = "fixed"; ta.style.left = "-9999px";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("DM文面をコピーしました"); }
+    catch (_) { toast("コピーに失敗しました"); }
+    ta.remove();
   }
 }
 
@@ -365,6 +419,9 @@ function openModal(id) {
   $("f-status").value = it?.status || "検討中";
   $("f-color").value = it?.color || "";
   $("f-note").value = it?.note || "";
+  $("f-promo-code").value = it?.promoCode || "";
+  $("f-promo-qty").value = (it?.promoQty != null) ? it.promoQty : "";
+  $("f-promo-discount").value = (it?.promoDiscount != null) ? it.promoDiscount : "";
 
   state.draftPhotos = (it?.photos || []).slice();
   renderDraftPhotos();
@@ -512,6 +569,9 @@ async function saveItem() {
     prPosts: collectSubList("pr"),
     photos: state.draftPhotos,
     progress: collectModalProgress(),
+    promoCode: $("f-promo-code").value.trim(),
+    promoQty: $("f-promo-qty").value === "" ? null : Number($("f-promo-qty").value),
+    promoDiscount: $("f-promo-discount").value === "" ? null : Number($("f-promo-discount").value),
   };
   if (!data.name && !data.xId) { toast("ユーザー名かX IDを入力してください"); return; }
 
