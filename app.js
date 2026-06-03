@@ -374,7 +374,7 @@ function buildPromoMessage(code, qty, discount, expiry) {
   if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
   lines.push(
     "",
-    "なお、PR投稿が6/15以降になる場合は、7月末までの有効期限に変更させていただきますので、お気軽にお知らせくださいませ！",
+    "なお、PR投稿が6/15以降になる場合は、有効期限を変更させていただきますので、お気軽にお知らせくださいませ！",
     "",
     "画像も用意させていただきましたので、ぜひご活用ください！🙏",
     "",
