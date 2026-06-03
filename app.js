@@ -291,16 +291,20 @@ function render() {
     const promoCode = (it.promoCode || "").trim();
     let promoHtml = "";
     if (promoCode) {
+      const expiry = (it.promoExpiry || "").trim();
       const qty = it.promoQty, disc = it.promoDiscount;
-      const qtyStr = (qty != null && qty !== "") ? `${qty}個` : "—";
-      const discStr = (disc != null && disc !== "") ? `${disc}%` : "—";
+      const subParts = [];
+      if (expiry) subParts.push(`期限 <b>${esc(expiry)}</b>`);
+      if (qty != null && qty !== "") subParts.push(`数量 <b>${esc(qty + "個")}</b>`);
+      if (disc != null && disc !== "") subParts.push(`割引 <b>${esc(disc + "%")}</b>`);
+      const subHtml = subParts.length ? `<div class="promo-sub">${subParts.join(" ／ ")}</div>` : "";
       promoHtml = `
         <div class="card-promo">
           <div class="promo-head">
             <span class="promo-label">🎟️ Amazonプロモコード</span>
             <span class="promo-code">${esc(promoCode)}</span>
           </div>
-          <div class="promo-sub">数量 <b>${esc(qtyStr)}</b> ／ 割引 <b>${esc(discStr)}</b></div>
+          ${subHtml}
           <button type="button" class="promo-copy">📋 DM文面をコピー</button>
         </div>`;
     }
@@ -358,13 +362,14 @@ function render() {
 }
 
 // ====== プロモコードDM文面（コピー用） ======
-function buildPromoMessage(code, qty, discount) {
+function buildPromoMessage(code, qty, discount, expiry) {
   const lines = [
     "お世話になっております！",
     "プロモーションコードの詳細についてお送りします！",
     "",
     "プロモーションコード：" + (code || ""),
   ];
+  if (expiry && String(expiry).trim()) lines.push("有効期限：" + String(expiry).trim());
   if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
   if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
   lines.push(
@@ -378,7 +383,7 @@ function buildPromoMessage(code, qty, discount) {
   return lines.join("\n");
 }
 async function copyPromoMessage(item) {
-  const msg = buildPromoMessage(item.promoCode, item.promoQty, item.promoDiscount);
+  const msg = buildPromoMessage(item.promoCode, item.promoQty, item.promoDiscount, item.promoExpiry);
   try {
     await navigator.clipboard.writeText(msg);
     toast("DM文面をコピーしました");
@@ -427,6 +432,7 @@ function openModal(id) {
   $("f-color").value = it?.color || "";
   $("f-note").value = it?.note || "";
   $("f-promo-code").value = it?.promoCode || "";
+  $("f-promo-expiry").value = it?.promoExpiry || "";
   $("f-promo-qty").value = (it?.promoQty != null) ? it.promoQty : "";
   $("f-promo-discount").value = (it?.promoDiscount != null) ? it.promoDiscount : "";
 
@@ -577,6 +583,7 @@ async function saveItem() {
     photos: state.draftPhotos,
     progress: collectModalProgress(),
     promoCode: $("f-promo-code").value.trim(),
+    promoExpiry: $("f-promo-expiry").value.trim(),
     promoQty: $("f-promo-qty").value === "" ? null : Number($("f-promo-qty").value),
     promoDiscount: $("f-promo-discount").value === "" ? null : Number($("f-promo-discount").value),
   };

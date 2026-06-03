@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#6cb0e6" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236cb0e6'/%3E%3Ctext x='50%25' y='54%25' font-size='38' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3Em%3C/text%3E%3C/svg%3E" />
   <title>minotel 提供先管理ツール</title>
-  <link rel="stylesheet" href="styles.css?v=2026060202" />
+  <link rel="stylesheet" href="styles.css?v=2026060203" />
 </head>
 <body>
   <!-- パスワード画面 -->
@@ -168,6 +168,7 @@
         <div class="field">
           <span class="field-label">Amazonプロモーションコード（任意）</span>
           <input id="f-promo-code" type="text" placeholder="例: ABCD-1234" autocomplete="off" />
+          <input id="f-promo-expiry" type="text" placeholder="有効期限（例: 6/4~6/30 23:59）" autocomplete="off" style="margin-top:8px" />
           <div class="field-row" style="margin-top:8px">
             <label class="field" style="margin-bottom:0">
               <span class="field-label">数量限定</span>
@@ -228,6 +229,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script type="module" src="app.js?v=2026060202"></script>
+  <script type="module" src="app.js?v=2026060203"></script>
 </body>
 </html>
