@@ -367,7 +367,14 @@ function buildPromoMessage(code, qty, discount) {
   ];
   if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
   if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
-  lines.push("", "画像も用意させていただきましたので、ぜひご活用ください！🙏", "", "よろしくお願いいたします！");
+  lines.push(
+    "",
+    "なお、プロモーションコードの有効期限は変更可能ですので、PR投稿が6月後半や7月以降になりそうな場合は、お気軽にお知らせくださいませ。すぐに対応させていただきます！",
+    "",
+    "画像も用意させていただきましたので、ぜひご活用ください！🙏",
+    "",
+    "よろしくお願いいたします！"
+  );
   return lines.join("\n");
 }
 async function copyPromoMessage(item) {
