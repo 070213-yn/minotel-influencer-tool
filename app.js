@@ -361,6 +361,35 @@ function render() {
   }
 }
 
+// ====== 有効期限ドロップダウンの選択肢生成（当月含め12か月分の月末 23:59） ======
+function buildExpiryOptions(currentValue) {
+  const sel = $("f-promo-expiry");
+  sel.innerHTML = "";
+  const empty = document.createElement("option");
+  empty.value = ""; empty.textContent = "（指定なし）";
+  sel.appendChild(empty);
+
+  const now = new Date();
+  const presets = [];
+  for (let i = 0; i < 12; i++) {
+    // i=0 → 当月末, i=1 → 翌月末, ...（その月の翌月「0日目」= その月の月末）
+    const d = new Date(now.getFullYear(), now.getMonth() + i + 1, 0);
+    presets.push(`${d.getMonth() + 1}/${d.getDate()} 23:59`);
+  }
+  for (const p of presets) {
+    const opt = document.createElement("option");
+    opt.value = p; opt.textContent = p;
+    sel.appendChild(opt);
+  }
+  // 既存値がプリセットに無い場合は末尾に追加して選択
+  if (currentValue && !presets.includes(currentValue)) {
+    const opt = document.createElement("option");
+    opt.value = currentValue; opt.textContent = currentValue + "（既存値）";
+    sel.appendChild(opt);
+  }
+  sel.value = currentValue || "";
+}
+
 // ====== プロモコードDM文面（コピー用） ======
 function buildPromoMessage(code, qty, discount, expiry) {
   const lines = [
@@ -430,7 +459,7 @@ function openModal(id) {
   $("f-color").value = it?.color || "";
   $("f-note").value = it?.note || "";
   $("f-promo-code").value = it?.promoCode || "";
-  $("f-promo-expiry").value = it?.promoExpiry || "";
+  buildExpiryOptions(it?.promoExpiry || "");
   $("f-promo-qty").value = (it?.promoQty != null) ? it.promoQty : "";
   $("f-promo-discount").value = (it?.promoDiscount != null) ? it.promoDiscount : "";
 
