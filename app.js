@@ -319,11 +319,17 @@ function render() {
       if (u) extra.push(`<a class="tag-link" href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">PR: ${esc(p.label || "投稿")}</a>`);
     });
 
+    const dmHref = "https://070213-yn.github.io/minotel-dm-reply/"
+      + "?name=" + encodeURIComponent(it.name || "")
+      + "&color=" + encodeURIComponent(it.color || "");
+    const dmLinkHtml = `<a class="card-dm" href="${dmHref}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📨 DM返信文を作る</a>`;
+
     card.innerHTML = `
       <div class="card-head">
         <div class="card-name">${esc(it.name || "（名前なし）")}</div>
         ${idLine}
         <div class="badges">${badges.join("")}</div>
+        ${dmLinkHtml}
       </div>
       <div class="stats">
         <span class="stat">フォロワー<b>${fmtNum(it.followers)}</b></span>
