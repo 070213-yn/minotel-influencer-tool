@@ -240,6 +240,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 }
 .promo-copy:hover { background: #e8932c; }
 .promo-copy:active { transform: scale(0.985); }
+/* 発送通知＋プロモまとめ版（2つ目のボタン） */
+.promo-copy-ship { background: #6cb0e6; margin-top: 6px; }
+.promo-copy-ship:hover { background: #5aa6d8; }
 
 /* メモ表示（カード上） */
 .card-note {

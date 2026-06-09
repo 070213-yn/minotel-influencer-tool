@@ -305,7 +305,8 @@ function render() {
             <span class="promo-code">${esc(promoCode)}</span>
           </div>
           ${subHtml}
-          <button type="button" class="promo-copy">📋 DM文面をコピー</button>
+          <button type="button" class="promo-copy" data-kind="promo">📋 DM文面をコピー</button>
+          <button type="button" class="promo-copy promo-copy-ship" data-kind="ship">📦 発送通知＋まとめてコピー</button>
         </div>`;
     }
 
@@ -356,11 +357,12 @@ function render() {
         toggleProgress(it.id, btn.dataset.tag);
       });
     });
-    // プロモコード DM文面コピー
+    // プロモコード DM文面コピー（2種類）
     card.querySelectorAll(".promo-copy").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        copyPromoMessage(it);
+        if (btn.dataset.kind === "ship") copyShippingPromoMessage(it);
+        else copyPromoMessage(it);
       });
     });
     list.appendChild(card);
@@ -417,15 +419,50 @@ function buildPromoMessage(code, qty, discount, expiry) {
 }
 async function copyPromoMessage(item) {
   const msg = buildPromoMessage(item.promoCode, item.promoQty, item.promoDiscount, item.promoExpiry);
+  await copyToClipboard(msg, "DM文面をコピーしました");
+}
+
+// 発送通知＋プロモまとめ版
+function buildShippingPromoMessage(code, qty, discount, expiry) {
+  const lines = [
+    "お世話になっております！",
+    "",
+    "本日、商品の発送が完了いたしました！",
+    "お届けまで今しばらくお待ちくださいませ。",
+    "",
+    "また、今回ご活用いただけるプロモーションコードについてもお送りします！",
+    "",
+    "プロモーションコード：" + (code || ""),
+  ];
+  if (expiry && String(expiry).trim()) lines.push("有効期限：" + String(expiry).trim());
+  if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
+  if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
+  lines.push(
+    "",
+    "画像も用意させていただきましたので、ぜひご活用ください！🙏",
+    "",
+    "ご紹介の際にご自由にお使いいただける素材を以下のGoogleドライブにご用意しておりますので、必要に応じてご活用ください☁️",
+    "https://drive.google.com/drive/folders/1Dr0dTOSKV9o2U6p6ZsOowakbLfaWAT_j",
+    "",
+    "引き続きよろしくお願いいたします🙇‍♂️"
+  );
+  return lines.join("\n");
+}
+async function copyShippingPromoMessage(item) {
+  const msg = buildShippingPromoMessage(item.promoCode, item.promoQty, item.promoDiscount, item.promoExpiry);
+  await copyToClipboard(msg, "発送通知＋プロモをコピーしました");
+}
+
+// クリップボードコピー（フォールバック付き共通関数）
+async function copyToClipboard(text, successMsg) {
   try {
-    await navigator.clipboard.writeText(msg);
-    toast("DM文面をコピーしました");
+    await navigator.clipboard.writeText(text);
+    toast(successMsg);
   } catch (e) {
-    // フォールバック: テキストエリア経由
     const ta = document.createElement("textarea");
-    ta.value = msg; ta.style.position = "fixed"; ta.style.left = "-9999px";
+    ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); toast("DM文面をコピーしました"); }
+    try { document.execCommand("copy"); toast(successMsg); }
     catch (_) { toast("コピーに失敗しました"); }
     ta.remove();
   }
