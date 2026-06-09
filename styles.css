@@ -244,6 +244,16 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .promo-copy-ship { background: #6cb0e6; margin-top: 6px; }
 .promo-copy-ship:hover { background: #5aa6d8; }
 
+/* プロモ画像メーカー連携リンク */
+.promo-image-link {
+  display: block; text-align: center; margin-top: 6px;
+  padding: 9px 12px; border-radius: 8px;
+  background: #a06ce6; color: #fff; font-weight: 700; font-size: 13px;
+  text-decoration: none; transition: transform .08s;
+}
+.promo-image-link:hover { background: #8e58d6; }
+.promo-image-link:active { transform: scale(0.985); }
+
 /* メモ表示（カード上） */
 .card-note {
   margin-top: 10px; padding: 10px 12px; border-radius: 10px;

@@ -307,6 +307,12 @@ function render() {
           ${subHtml}
           <button type="button" class="promo-copy" data-kind="promo">📋 DM文面をコピー</button>
           <button type="button" class="promo-copy promo-copy-ship" data-kind="ship">📦 発送通知＋まとめてコピー</button>
+          <a class="promo-image-link" href="${"https://070213-yn.github.io/minotel-promo-image-tool/"
+            + "?name=" + encodeURIComponent(it.name || "")
+            + "&code=" + encodeURIComponent(promoCode)
+            + (it.promoQty != null && it.promoQty !== "" ? "&qty=" + encodeURIComponent(it.promoQty) : "")
+            + (it.promoExpiry ? "&expiry=" + encodeURIComponent(it.promoExpiry) : "")
+          }" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 プロモ画像を作る</a>
         </div>`;
     }
 
