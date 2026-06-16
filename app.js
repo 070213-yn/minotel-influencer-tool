@@ -19,6 +19,7 @@ const state = {
   statusFilter: new Set(),
   colorFilter: new Set(),
   tagFilter: new Set(),
+  saleOnly: false,
   ratioMax: null,
   sort: "followers_desc",
   editingId: null,   // 編集中のドキュメントID（新規はnull）
@@ -232,6 +233,7 @@ function visibleItems() {
   if (state.statusFilter.size) arr = arr.filter((it) => state.statusFilter.has(it.status));
   if (state.colorFilter.size) arr = arr.filter((it) => state.colorFilter.has(it.color));
   if (state.tagFilter.size) arr = arr.filter((it) => (it.tags || []).some(t => state.tagFilter.has(t)));
+  if (state.saleOnly) arr = arr.filter((it) => (it.saleName || "").trim() !== "");
   if (state.ratioMax !== null) {
     arr = arr.filter((it) => {
       const r = calcRatio(it);
@@ -977,6 +979,12 @@ function bindUI() {
       state.tagFilter.has(v) ? state.tagFilter.delete(v) : state.tagFilter.add(v);
       render();
     });
+  });
+  // セール告知ありフィルター
+  $("chip-sale").addEventListener("click", () => {
+    state.saleOnly = !state.saleOnly;
+    $("chip-sale").classList.toggle("active", state.saleOnly);
+    render();
   });
   // 並べ替え
   $("sort").addEventListener("change", () => { state.sort = $("sort").value; render(); });
