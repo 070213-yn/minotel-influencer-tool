@@ -243,6 +243,23 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 /* 発送通知＋プロモまとめ版（2つ目のボタン） */
 .promo-copy-ship { background: #6cb0e6; margin-top: 6px; }
 .promo-copy-ship:hover { background: #5aa6d8; }
+/* セール告知のみ */
+.promo-copy-sale { background: #3aab66; margin-top: 6px; }
+.promo-copy-sale:hover { background: #2d9554; }
+/* セール＋プロモまとめ */
+.promo-copy-salepromo { background: #e07a3a; margin-top: 6px; }
+.promo-copy-salepromo:hover { background: #cc6929; }
+/* セール情報表示 */
+.sale-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 13px; font-weight: 700; color: #2a6d44;
+}
+.sale-head-sep {
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed #f0d9a8;
+}
+.sale-label { color: #2a6d44; letter-spacing: 0.03em; }
+.sale-period { color: #4a8a60; font-weight: 800; }
+.sale-detail { font-size: 12px; color: #4a6a55; margin-top: 4px; }
 
 /* プロモ画像メーカー連携リンク */
 .promo-image-link {

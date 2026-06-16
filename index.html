@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#6cb0e6" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236cb0e6'/%3E%3Ctext x='50%25' y='54%25' font-size='38' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3Em%3C/text%3E%3C/svg%3E" />
   <title>minotel 提供先管理ツール</title>
-  <link rel="stylesheet" href="styles.css?v=2026060211" />
+  <link rel="stylesheet" href="styles.css?v=2026060212" />
 </head>
 <body>
   <!-- パスワード画面 -->
@@ -183,6 +183,14 @@
         </div>
 
         <div class="field">
+          <span class="field-label">Amazonセール告知（任意）</span>
+          <input id="f-sale-name" type="text" placeholder="セール名（例: プライムデー / ブラックフライデー）" autocomplete="off" />
+          <input id="f-sale-period" type="text" placeholder="期間（例: 7/15 0:00 ~ 7/16 23:59）" autocomplete="off" style="margin-top:8px" />
+          <input id="f-sale-detail" type="text" placeholder="詳細（任意・例: プライム会員限定で最大50%OFF）" autocomplete="off" style="margin-top:8px" />
+          <span class="hint">セール名が入っていると「🛒 セール告知をコピー」ボタンが出ます。プロモコードと両方入れると「セール＋プロモ」もコピーできます。</span>
+        </div>
+
+        <div class="field">
           <span class="field-label">写真（デスク等・複数枚OK）</span>
           <div id="photo-grid" class="photo-grid"></div>
           <label class="photo-add">
@@ -229,6 +237,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script type="module" src="app.js?v=2026060211"></script>
+  <script type="module" src="app.js?v=2026060212"></script>
 </body>
 </html>

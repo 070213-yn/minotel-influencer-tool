@@ -289,31 +289,59 @@ function render() {
     }</div>`;
 
     const promoCode = (it.promoCode || "").trim();
+    const saleName = (it.saleName || "").trim();
     let promoHtml = "";
-    if (promoCode) {
-      const expiry = (it.promoExpiry || "").trim();
-      const qty = it.promoQty, disc = it.promoDiscount;
-      const subParts = [];
-      if (expiry) subParts.push(`期限 <b>${esc(expiry)}</b>`);
-      if (qty != null && qty !== "") subParts.push(`数量 <b>${esc(qty + "個")}</b>`);
-      if (disc != null && disc !== "") subParts.push(`割引 <b>${esc(disc + "%")}</b>`);
-      const subHtml = subParts.length ? `<div class="promo-sub">${subParts.join(" ／ ")}</div>` : "";
-      promoHtml = `
-        <div class="card-promo">
+    if (promoCode || saleName) {
+      // プロモ表示部
+      let promoHead = "";
+      if (promoCode) {
+        const expiry = (it.promoExpiry || "").trim();
+        const qty = it.promoQty, disc = it.promoDiscount;
+        const subParts = [];
+        if (expiry) subParts.push(`期限 <b>${esc(expiry)}</b>`);
+        if (qty != null && qty !== "") subParts.push(`数量 <b>${esc(qty + "個")}</b>`);
+        if (disc != null && disc !== "") subParts.push(`割引 <b>${esc(disc + "%")}</b>`);
+        const subHtml = subParts.length ? `<div class="promo-sub">${subParts.join(" ／ ")}</div>` : "";
+        promoHead = `
           <div class="promo-head">
             <span class="promo-label">🎟️ Amazonプロモコード</span>
             <span class="promo-code">${esc(promoCode)}</span>
           </div>
-          ${subHtml}
-          <button type="button" class="promo-copy" data-kind="promo">📋 DM文面をコピー</button>
-          <button type="button" class="promo-copy promo-copy-ship" data-kind="ship">📦 発送通知＋まとめてコピー</button>
-          <a class="promo-image-link" href="${"https://070213-yn.github.io/minotel-promo-image-tool/"
-            + "?name=" + encodeURIComponent(it.name || "")
-            + "&code=" + encodeURIComponent(promoCode)
-            + (it.promoQty != null && it.promoQty !== "" ? "&qty=" + encodeURIComponent(it.promoQty) : "")
-            + (it.promoExpiry ? "&expiry=" + encodeURIComponent(it.promoExpiry) : "")
-          }" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 プロモ画像を作る</a>
-        </div>`;
+          ${subHtml}`;
+      }
+      // セール表示部
+      let saleHead = "";
+      if (saleName) {
+        const period = (it.salePeriod || "").trim();
+        const detail = (it.saleDetail || "").trim();
+        saleHead = `
+          <div class="sale-head${promoCode ? " sale-head-sep" : ""}">
+            <span class="sale-label">🛒 ${esc(saleName)}</span>
+            ${period ? `<span class="sale-period">${esc(period)}</span>` : ""}
+          </div>
+          ${detail ? `<div class="sale-detail">${esc(detail)}</div>` : ""}`;
+      }
+      // ボタン群（条件付き）
+      const buttons = [];
+      if (promoCode) {
+        buttons.push(`<button type="button" class="promo-copy" data-kind="promo">📋 DM文面をコピー</button>`);
+        buttons.push(`<button type="button" class="promo-copy promo-copy-ship" data-kind="ship">📦 発送通知＋まとめてコピー</button>`);
+      }
+      if (saleName) {
+        buttons.push(`<button type="button" class="promo-copy promo-copy-sale" data-kind="sale">🛒 セール告知をコピー</button>`);
+      }
+      if (promoCode && saleName) {
+        buttons.push(`<button type="button" class="promo-copy promo-copy-salepromo" data-kind="salepromo">🛒+🎟️ セール＋プロモまとめ</button>`);
+      }
+      if (promoCode) {
+        const imgHref = "https://070213-yn.github.io/minotel-promo-image-tool/"
+          + "?name=" + encodeURIComponent(it.name || "")
+          + "&code=" + encodeURIComponent(promoCode)
+          + (it.promoQty != null && it.promoQty !== "" ? "&qty=" + encodeURIComponent(it.promoQty) : "")
+          + (it.promoExpiry ? "&expiry=" + encodeURIComponent(it.promoExpiry) : "");
+        buttons.push(`<a class="promo-image-link" href="${imgHref}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 プロモ画像を作る</a>`);
+      }
+      promoHtml = `<div class="card-promo">${promoHead}${saleHead}${buttons.join("")}</div>`;
     }
 
     const extra = [];
@@ -363,11 +391,14 @@ function render() {
         toggleProgress(it.id, btn.dataset.tag);
       });
     });
-    // プロモコード DM文面コピー（2種類）
+    // プロモ/セール DM文面コピー（4種類）
     card.querySelectorAll(".promo-copy").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (btn.dataset.kind === "ship") copyShippingPromoMessage(it);
+        const kind = btn.dataset.kind;
+        if (kind === "ship") copyShippingPromoMessage(it);
+        else if (kind === "sale") copySaleMessage(it);
+        else if (kind === "salepromo") copySalePromoMessage(it);
         else copyPromoMessage(it);
       });
     });
@@ -459,6 +490,58 @@ async function copyShippingPromoMessage(item) {
   await copyToClipboard(msg, "発送通知＋プロモをコピーしました");
 }
 
+// Amazonセール告知のみ
+function buildSaleMessage(name, period, detail) {
+  const lines = [
+    "お世話になっております！",
+    "",
+    (name || "Amazonセール") + "についてのご案内です！",
+    "",
+  ];
+  if (period) lines.push("期間：" + period);
+  if (detail) lines.push(detail);
+  lines.push(
+    "",
+    "ご紹介の際にぜひご活用いただけますと幸いです🛒",
+    "",
+    "よろしくお願いいたします！"
+  );
+  return lines.join("\n");
+}
+async function copySaleMessage(item) {
+  const msg = buildSaleMessage(item.saleName, item.salePeriod, item.saleDetail);
+  await copyToClipboard(msg, "セール告知をコピーしました");
+}
+
+// セール＋プロモまとめ
+function buildSalePromoMessage(saleName, salePeriod, saleDetail, code, qty, discount, expiry) {
+  const lines = [
+    "お世話になっております！",
+    "",
+    (saleName || "Amazonセール") + "とプロモーションコードについてのご案内です！",
+    "",
+    "【" + (saleName || "セール") + "】",
+  ];
+  if (salePeriod) lines.push("期間：" + salePeriod);
+  if (saleDetail) lines.push(saleDetail);
+  lines.push("", "【プロモーションコード】", "プロモーションコード：" + (code || ""));
+  if (expiry && String(expiry).trim()) lines.push("有効期限：" + String(expiry).trim());
+  if (qty != null && qty !== "") lines.push("数量限定：" + qty + "個");
+  if (discount != null && discount !== "") lines.push("割引率：" + discount + "％");
+  lines.push(
+    "",
+    "画像も用意させていただきましたので、ぜひご活用ください！🙏",
+    "",
+    "よろしくお願いいたします！"
+  );
+  return lines.join("\n");
+}
+async function copySalePromoMessage(item) {
+  const msg = buildSalePromoMessage(item.saleName, item.salePeriod, item.saleDetail,
+    item.promoCode, item.promoQty, item.promoDiscount, item.promoExpiry);
+  await copyToClipboard(msg, "セール＋プロモまとめをコピーしました");
+}
+
 // クリップボードコピー（フォールバック付き共通関数）
 async function copyToClipboard(text, successMsg) {
   try {
@@ -511,6 +594,9 @@ function openModal(id) {
   buildExpiryOptions(it?.promoExpiry || "");
   $("f-promo-qty").value = (it?.promoQty != null) ? it.promoQty : "";
   $("f-promo-discount").value = (it?.promoDiscount != null) ? it.promoDiscount : "";
+  $("f-sale-name").value = it?.saleName || "";
+  $("f-sale-period").value = it?.salePeriod || "";
+  $("f-sale-detail").value = it?.saleDetail || "";
 
   state.draftPhotos = (it?.photos || []).slice();
   renderDraftPhotos();
@@ -662,6 +748,9 @@ async function saveItem() {
     promoExpiry: $("f-promo-expiry").value.trim(),
     promoQty: $("f-promo-qty").value === "" ? null : Number($("f-promo-qty").value),
     promoDiscount: $("f-promo-discount").value === "" ? null : Number($("f-promo-discount").value),
+    saleName: $("f-sale-name").value.trim(),
+    salePeriod: $("f-sale-period").value.trim(),
+    saleDetail: $("f-sale-detail").value.trim(),
   };
   if (!data.name && !data.xId) { toast("ユーザー名かX IDを入力してください"); return; }
 
