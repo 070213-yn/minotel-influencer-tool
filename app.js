@@ -18,6 +18,7 @@ const state = {
   search: "",
   statusFilter: new Set(),
   colorFilter: new Set(),
+  tagFilter: new Set(),
   ratioMax: null,
   sort: "followers_desc",
   editingId: null,   // 編集中のドキュメントID（新規はnull）
@@ -26,6 +27,12 @@ const state = {
 };
 
 let db = null;
+
+// ====== 経由タグ（KGT経由 / Pixio経由 など） ======
+const REFERRAL_TAGS = [
+  { key: "KGT経由",   color: "#7a5ec9" },
+  { key: "Pixio経由", color: "#3aab66" },
+];
 
 // ====== 進捗タグ定義（カード上でON/OFF・複数同時可） ======
 const PROGRESS_TAGS = [
@@ -224,6 +231,7 @@ function visibleItems() {
   }
   if (state.statusFilter.size) arr = arr.filter((it) => state.statusFilter.has(it.status));
   if (state.colorFilter.size) arr = arr.filter((it) => state.colorFilter.has(it.color));
+  if (state.tagFilter.size) arr = arr.filter((it) => (it.tags || []).some(t => state.tagFilter.has(t)));
   if (state.ratioMax !== null) {
     arr = arr.filter((it) => {
       const r = calcRatio(it);
@@ -269,6 +277,11 @@ function render() {
     const badges = [];
     if (it.status) badges.push(`<span class="badge badge-status-${esc(it.status)}">${esc(it.status)}</span>`);
     if (it.color) badges.push(`<span class="badge badge-color-${esc(it.color)}">${esc(it.color)}</span>`);
+    for (const tag of (it.tags || [])) {
+      const def = REFERRAL_TAGS.find(t => t.key === tag);
+      const style = def ? `background:${def.color};color:#fff` : "background:#888;color:#fff";
+      badges.push(`<span class="badge badge-tag" style="${style}">${esc(tag)}</span>`);
+    }
 
     const photos = (it.photos || []);
     const photosHtml = photos.length
@@ -404,6 +417,38 @@ function render() {
     });
     list.appendChild(card);
   }
+}
+
+// ====== Amazonセール名のドロップダウン選択肢 ======
+const SALE_PRESETS = [
+  "プライムデー",
+  "プライム感謝祭",
+  "ブラックフライデー",
+  "サイバーマンデー",
+  "スマイルセール",
+  "タイムセール祭り",
+  "初売りセール",
+  "ニューライフセール",
+  "春のサプライズセール",
+];
+function buildSaleNameOptions(currentValue) {
+  const sel = $("f-sale-name");
+  sel.innerHTML = "";
+  const empty = document.createElement("option");
+  empty.value = ""; empty.textContent = "（指定なし）";
+  sel.appendChild(empty);
+  for (const p of SALE_PRESETS) {
+    const opt = document.createElement("option");
+    opt.value = p; opt.textContent = p;
+    sel.appendChild(opt);
+  }
+  // 既存値がプリセットに無い場合は末尾に追加
+  if (currentValue && !SALE_PRESETS.includes(currentValue)) {
+    const opt = document.createElement("option");
+    opt.value = currentValue; opt.textContent = currentValue + "（既存値）";
+    sel.appendChild(opt);
+  }
+  sel.value = currentValue || "";
 }
 
 // ====== 有効期限ドロップダウンの選択肢生成（当月含め12か月分の月末 23:59） ======
@@ -594,13 +639,14 @@ function openModal(id) {
   buildExpiryOptions(it?.promoExpiry || "");
   $("f-promo-qty").value = (it?.promoQty != null) ? it.promoQty : "";
   $("f-promo-discount").value = (it?.promoDiscount != null) ? it.promoDiscount : "";
-  $("f-sale-name").value = it?.saleName || "";
+  buildSaleNameOptions(it?.saleName || "");
   $("f-sale-period").value = it?.salePeriod || "";
   $("f-sale-detail").value = it?.saleDetail || "";
 
   state.draftPhotos = (it?.photos || []).slice();
   renderDraftPhotos();
   renderModalProgress(it?.progress || []);
+  renderModalTags(it?.tags || []);
   renderSubList("sns", it?.otherSns || []);
   renderSubList("pr", it?.prPosts || []);
   updateRatioPreview();
@@ -635,6 +681,28 @@ function renderModalProgress(progress) {
 }
 function collectModalProgress() {
   return [...$("f-progress").querySelectorAll("input:checked")].map(i => i.value);
+}
+
+// 経由タグ（KGT経由 / Pixio経由）— モーダル内チェックUI
+function renderModalTags(tags) {
+  const cur = new Set(tags || []);
+  $("f-tags").innerHTML = REFERRAL_TAGS.map(t => `
+    <label class="progress-check${cur.has(t.key) ? " on" : ""}" style="${cur.has(t.key) ? `background:${t.color};border-color:${t.color};color:#fff` : ""}">
+      <input type="checkbox" value="${esc(t.key)}" ${cur.has(t.key) ? "checked" : ""}>
+      <span>${esc(t.key)}</span>
+    </label>
+  `).join("");
+  $("f-tags").querySelectorAll("input").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const lbl = cb.closest(".progress-check");
+      const t = REFERRAL_TAGS.find(x => x.key === cb.value);
+      if (cb.checked) { lbl.classList.add("on"); lbl.style.cssText = `background:${t.color};border-color:${t.color};color:#fff`; }
+      else { lbl.classList.remove("on"); lbl.style.cssText = ""; }
+    });
+  });
+}
+function collectModalTags() {
+  return [...$("f-tags").querySelectorAll("input:checked")].map(i => i.value);
 }
 
 function renderDraftPhotos() {
@@ -744,6 +812,7 @@ async function saveItem() {
     prPosts: collectSubList("pr"),
     photos: state.draftPhotos,
     progress: collectModalProgress(),
+    tags: collectModalTags(),
     promoCode: $("f-promo-code").value.trim(),
     promoExpiry: $("f-promo-expiry").value.trim(),
     promoQty: $("f-promo-qty").value === "" ? null : Number($("f-promo-qty").value),
@@ -897,6 +966,15 @@ function bindUI() {
       const v = b.dataset.color;
       b.classList.toggle("active");
       state.colorFilter.has(v) ? state.colorFilter.delete(v) : state.colorFilter.add(v);
+      render();
+    });
+  });
+  // 経由タグフィルター
+  document.querySelectorAll(".chip-tag").forEach((b) => {
+    b.addEventListener("click", () => {
+      const v = b.dataset.tag;
+      b.classList.toggle("active");
+      state.tagFilter.has(v) ? state.tagFilter.delete(v) : state.tagFilter.add(v);
       render();
     });
   });

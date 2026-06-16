@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#6cb0e6" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236cb0e6'/%3E%3Ctext x='50%25' y='54%25' font-size='38' font-family='sans-serif' font-weight='700' fill='white' text-anchor='middle' dominant-baseline='middle'%3Em%3C/text%3E%3C/svg%3E" />
   <title>minotel 提供先管理ツール</title>
-  <link rel="stylesheet" href="styles.css?v=2026060212" />
+  <link rel="stylesheet" href="styles.css?v=2026060214" />
 </head>
 <body>
   <!-- パスワード画面 -->
@@ -69,6 +69,11 @@
           <button class="chip chip-color" data-color="ピュアホワイト">ピュアホワイト</button>
           <button class="chip chip-color" data-color="パステルブルー">パステルブルー</button>
           <button class="chip chip-color" data-color="どちらでもOK">どちらでもOK</button>
+        </div>
+        <div class="filter-group" id="tag-filters">
+          <span class="filter-label">経由:</span>
+          <button class="chip chip-tag" data-tag="KGT経由">KGT経由</button>
+          <button class="chip chip-tag" data-tag="Pixio経由">Pixio経由</button>
         </div>
       </div>
 
@@ -166,6 +171,11 @@
         </div>
 
         <div class="field">
+          <span class="field-label">経由タグ（複数選択可）</span>
+          <div id="f-tags" class="modal-progress"></div>
+        </div>
+
+        <div class="field">
           <span class="field-label">Amazonプロモーションコード（任意）</span>
           <input id="f-promo-code" type="text" placeholder="例: ABCD-1234" autocomplete="off" />
           <select id="f-promo-expiry" autocomplete="off" style="margin-top:8px"></select>
@@ -184,7 +194,7 @@
 
         <div class="field">
           <span class="field-label">Amazonセール告知（任意）</span>
-          <input id="f-sale-name" type="text" placeholder="セール名（例: プライムデー / ブラックフライデー）" autocomplete="off" />
+          <select id="f-sale-name" autocomplete="off"></select>
           <input id="f-sale-period" type="text" placeholder="期間（例: 7/15 0:00 ~ 7/16 23:59）" autocomplete="off" style="margin-top:8px" />
           <input id="f-sale-detail" type="text" placeholder="詳細（任意・例: プライム会員限定で最大50%OFF）" autocomplete="off" style="margin-top:8px" />
           <span class="hint">セール名が入っていると「🛒 セール告知をコピー」ボタンが出ます。プロモコードと両方入れると「セール＋プロモ」もコピーできます。</span>
@@ -237,6 +247,6 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script type="module" src="app.js?v=2026060212"></script>
+  <script type="module" src="app.js?v=2026060214"></script>
 </body>
 </html>

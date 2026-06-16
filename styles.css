@@ -111,6 +111,10 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700;
 }
 .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.chip-tag[data-tag="KGT経由"].active { background: #7a5ec9; border-color: #7a5ec9; }
+.chip-tag[data-tag="Pixio経由"].active { background: #3aab66; border-color: #3aab66; }
+/* カード上の経由タグバッジ */
+.badge.badge-tag { font-weight: 800; letter-spacing: 0.02em; }
 .chip-status[data-status="提供確定"].active { background: var(--green); border-color: var(--green); }
 .chip-status[data-status="提供しない"].active { background: var(--muted); border-color: var(--muted); }
 
