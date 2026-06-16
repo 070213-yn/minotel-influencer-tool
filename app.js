@@ -336,17 +336,17 @@ function render() {
           </div>
           ${detail ? `<div class="sale-detail">${esc(detail)}</div>` : ""}`;
       }
-      // ボタン群（条件付き）
+      // ボタン群（条件付き・横並び）
       const buttons = [];
       if (promoCode) {
-        buttons.push(`<button type="button" class="promo-copy" data-kind="promo">📋 DM文面をコピー</button>`);
-        buttons.push(`<button type="button" class="promo-copy promo-copy-ship" data-kind="ship">📦 発送通知＋まとめてコピー</button>`);
+        buttons.push(`<button type="button" class="promo-copy" data-kind="promo" title="プロモ詳細のみ">📋 DM文面</button>`);
+        buttons.push(`<button type="button" class="promo-copy promo-copy-ship" data-kind="ship" title="発送通知＋プロモまとめ">📦 発送＋まとめ</button>`);
       }
       if (saleName) {
-        buttons.push(`<button type="button" class="promo-copy promo-copy-sale" data-kind="sale">🛒 セール告知をコピー</button>`);
+        buttons.push(`<button type="button" class="promo-copy promo-copy-sale" data-kind="sale" title="セール告知のみ">🛒 セール</button>`);
       }
       if (promoCode && saleName) {
-        buttons.push(`<button type="button" class="promo-copy promo-copy-salepromo" data-kind="salepromo">🛒+🎟️ セール＋プロモまとめ</button>`);
+        buttons.push(`<button type="button" class="promo-copy promo-copy-salepromo" data-kind="salepromo" title="セール＋プロモまとめ">🛒+🎟️ 両方</button>`);
       }
       if (promoCode) {
         const imgHref = "https://070213-yn.github.io/minotel-promo-image-tool/"
@@ -354,9 +354,9 @@ function render() {
           + "&code=" + encodeURIComponent(promoCode)
           + (it.promoQty != null && it.promoQty !== "" ? "&qty=" + encodeURIComponent(it.promoQty) : "")
           + (it.promoExpiry ? "&expiry=" + encodeURIComponent(it.promoExpiry) : "");
-        buttons.push(`<a class="promo-image-link" href="${imgHref}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🎨 プロモ画像を作る</a>`);
+        buttons.push(`<a class="promo-image-link" href="${imgHref}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="プロモ画像メーカーを開く">🎨 画像</a>`);
       }
-      promoHtml = `<div class="card-promo">${promoHead}${saleHead}${buttons.join("")}</div>`;
+      promoHtml = `<div class="card-promo">${promoHead}${saleHead}<div class="promo-actions">${buttons.join("")}</div></div>`;
     }
 
     const extra = [];
