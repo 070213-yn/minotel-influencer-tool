@@ -114,6 +114,14 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .chip-tag[data-tag="KGT経由"].active { background: #7a5ec9; border-color: #7a5ec9; }
 .chip-tag[data-tag="Pixio経由"].active { background: #3aab66; border-color: #3aab66; }
 .chip-sale.active { background: #e07a3a; border-color: #e07a3a; color: #fff; }
+.chip-prdone#chip-pr-done.active { background: #3aab66; border-color: #3aab66; color: #fff; }
+.chip-prdone#chip-pr-todo.active { background: #d88a3c; border-color: #d88a3c; color: #fff; }
+/* PR完了カード: 左端の緑バーで遠目でも識別 */
+.card.card-pr-done {
+  box-shadow: inset 5px 0 0 #3aab66, var(--shadow);
+  background: linear-gradient(90deg, #edf7f0 0%, #edf7f0 8px, #fff 8px);
+}
+.card.card-pr-done:hover { box-shadow: inset 5px 0 0 #3aab66, var(--shadow-lg); }
 /* カード上の経由タグバッジ */
 .badge.badge-tag { font-weight: 800; letter-spacing: 0.02em; }
 .chip-status[data-status="提供確定"].active { background: var(--green); border-color: var(--green); }

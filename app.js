@@ -20,6 +20,7 @@ const state = {
   colorFilter: new Set(),
   tagFilter: new Set(),
   saleOnly: false,
+  prFilter: "any",  // "any" / "done" / "todo"
   ratioMax: null,
   sort: "followers_desc",
   editingId: null,   // 編集中のドキュメントID（新規はnull）
@@ -234,6 +235,8 @@ function visibleItems() {
   if (state.colorFilter.size) arr = arr.filter((it) => state.colorFilter.has(it.color));
   if (state.tagFilter.size) arr = arr.filter((it) => (it.tags || []).some(t => state.tagFilter.has(t)));
   if (state.saleOnly) arr = arr.filter((it) => (it.saleName || "").trim() !== "");
+  if (state.prFilter === "done") arr = arr.filter((it) => (it.progress || []).includes("PR完了"));
+  else if (state.prFilter === "todo") arr = arr.filter((it) => !(it.progress || []).includes("PR完了"));
   if (state.ratioMax !== null) {
     arr = arr.filter((it) => {
       const r = calcRatio(it);
@@ -267,8 +270,9 @@ function render() {
 
   for (const it of items) {
     const r = calcRatio(it);
+    const prDone = (it.progress || []).includes("PR完了");
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "card" + (prDone ? " card-pr-done" : "");
     card.addEventListener("click", () => openModal(it.id));
 
     const xUrl = safeUrl(it.xLink) || (it.xId ? `https://x.com/${esc(it.xId)}` : "");
@@ -985,6 +989,20 @@ function bindUI() {
     state.saleOnly = !state.saleOnly;
     $("chip-sale").classList.toggle("active", state.saleOnly);
     render();
+  });
+  // PR完了/未完了フィルター（排他トグル）
+  const applyPrFilter = () => {
+    $("chip-pr-done").classList.toggle("active", state.prFilter === "done");
+    $("chip-pr-todo").classList.toggle("active", state.prFilter === "todo");
+    render();
+  };
+  $("chip-pr-done").addEventListener("click", () => {
+    state.prFilter = state.prFilter === "done" ? "any" : "done";
+    applyPrFilter();
+  });
+  $("chip-pr-todo").addEventListener("click", () => {
+    state.prFilter = state.prFilter === "todo" ? "any" : "todo";
+    applyPrFilter();
   });
   // 並べ替え
   $("sort").addEventListener("change", () => { state.sort = $("sort").value; render(); });
